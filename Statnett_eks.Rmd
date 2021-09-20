@@ -1,0 +1,126 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+stat_production_consumption <- function(from_date, date_as_cet = FALSE){
+
+  if(!lubridate::is.Date(from_date)){
+    stop("The from_date param is not of class date.")
+  }
+
+  data_url <- paste0("http://driftsdata.statnett.no/restapi/ProductionConsumption/GetData?From=", from_date)
+
+  data_request <- httr::GET(url = data_url, httr::user_agent("https://github.com/krose/statnettapi"))
+
+  data_content <- httr::content(data_request, as = "text", encoding = "UTF-8")
+  data_content <- jsonlite::fromJSON(data_content)
+
+  # Create the datetimeseq
+  date_utc <- seq(from = data_content$StartPointUTC,
+                  to = data_content$EndPointUTC,
+                  by = data_content$PeriodTickMs) / 1000
+
+  date_utc <- lubridate::as_datetime(date_utc)
+
+  if(date_as_cet){
+    date_utc <- lubridate::with_tz(date_utc, tzone = "CET")
+  }
+
+  #
+  tibble::tibble(date = date_utc,
+                 production = data_content$Production,
+                 consumption = data_content$Consumption)
+}
+```
+```{r}
+data = stat_production_consumption(as.Date("2021-01-01"))
+```
+```{r}
+  data_url <- paste0("http://driftsdata.statnett.no/restapi/ProductionConsumption/GetData?From=", as.Date("2021-09-19"))
+
+data_request <- httr::GET(url = data_url, httr::user_agent("https://github.com/krose/statnettapi"))
+
+  data_content <- httr::content(data_request, as = "text", encoding = "UTF-8")
+  data_content <- jsonlite::fromJSON(data_content)
+
+ 
+
+View(data_content$Production)
+#View(data_content$StartPointUTC)
+```
+```{r}
+  date_utc <- seq(from = data_content$StartPointUTC,
+                  to = data_content$EndPointUTC,
+                  by = data_content$PeriodTickMs) / 1000
+
+  date_utc <- lubridate::as_datetime(date_utc)
+```
+```{r}
+View(date_utc)
+```
+```{r}
+stat_production_consumption_latest_overview(date_as_cet = FALSE,
+  data_wide = FALSE)
+```
+
+
+
+
+
+```{r}
+library(ggplot2)
+library(plotly)
+
+
+stock <- read.csv('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv')
+
+fig <- plot_ly(stock, type = 'scatter', mode = 'lines')%>%
+  add_trace(x = ~Date, y = ~AAPL.High)%>%
+  layout(showlegend = F, title='Time Series with Range Slider and Selectors',
+         xaxis = list(rangeslider = list(visible = T),
+                      rangeselector=list(
+                        buttons=list(
+                          list(count=1, label="1m", step="month", stepmode="backward"),
+                          list(count=6, label="6m", step="month", stepmode="backward"),
+                          list(count=1, label="YTD", step="year", stepmode="todate"),
+                          list(count=1, label="1y", step="year", stepmode="backward"),
+                          list(step="all")
+                        ))))
+fig <- fig %>%
+  layout(
+         xaxis = list(zerolinecolor = '#ffff',
+                      zerolinewidth = 2,
+                      gridcolor = 'ffff'),
+         yaxis = list(zerolinecolor = '#ffff',
+                      zerolinewidth = 2,
+                      gridcolor = 'ffff'),
+         plot_bgcolor='#e5ecf6', margin = 0.1, width = 900)
+fig
+```
+
