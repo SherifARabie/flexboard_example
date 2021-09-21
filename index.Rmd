@@ -90,8 +90,5 @@ Column {data-width=350}
 
 ```{r}
 
-git remote add origin https://github.com/SherifARabie/flexboard_example.git
-git branch -M main
-git push -u origin main
 ```
 
