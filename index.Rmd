@@ -16,49 +16,64 @@ Column {data-width=650}
 ### Chart A
 
 ```{r}
-library(plotly)
 library(rjson)
+library(xts)
+library(dplyr)
+library(dygraphs)
 
-data <- fromJSON(file="https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json")
-data$features[[1]]
-df = read.csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv", header = T, colClasses = c("fips"="character"))
-#library(plotly)
-library(rjson)
+data_url <- paste0("http://driftsdata.statnett.no/restapi/ProductionConsumption/GetData?From=", as.Date("2020-04-1"))
 
-url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
-counties <- rjson::fromJSON(file=url)
-url2<- "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
-df <- read.csv(url2, colClasses=c(fips="character"))
-g <- list(
-  scope = 'usa',
-  projection = list(type = 'albers usa'),
-  showlakes = TRUE,
-  lakecolor = toRGB('white')
-)
-fig <- plot_ly()
-fig <- fig %>% add_trace(
-    type="choropleth",
-    geojson=counties,
-    locations=df$fips,
-    z=df$unemp,
-    colorscale="Viridis",
-    zmin=0,
-    zmax=12,
-    marker=list(line=list(
-      width=0)
-    )
-  )
-fig <- fig %>% colorbar(title = "Unemployment Rate (%)")
-fig <- fig %>% layout(
-    title = "2016 US Unemployment by County"
-)
+data_request <- httr::GET(url = data_url, httr::user_agent("https://github.com/krose/statnettapi"))
 
-fig <- fig %>% layout(
-    geo = g
-  )
+  data_content <- httr::content(data_request, as = "text", encoding = "UTF-8")
+  data_content <- jsonlite::fromJSON(data_content)
+
+ 
+
+Production = data_content$Production
+consumption = data_content$Consumption
+
+date_utc <- seq(from = data_content$StartPointUTC,
+                  to = data_content$EndPointUTC,
+                  by = data_content$PeriodTickMs) / 1000
+
+  date_utc <- lubridate::as_datetime(date_utc)
+
+x = data.frame(date_utc=date_utc, Production=Production,consumption=consumption)
+
+library(lubridate)
+x$date_utc = ymd_hms(x$date_utc)
+x$date = date(x$date_utc)
 
 
 
+
+
+data_selection = dplyr::select(x,Production,consumption) 
+
+data_selection$border1 = data_selection$Production
+data_selection$border2 = data_selection$consumption
+
+
+
+#data_selection = scale(as.matrix(data_selection))
+                       
+                       
+
+calnder_date = x$date 
+
+ts <- xts( data_selection, order.by= calnder_date)
+
+
+
+
+
+
+dygraph(ts, main = "Norwegian Production and Consumption of Electrcity")%>%
+  dyRangeSelector() %>%
+  dySeries("consumption") %>%
+  dySeries(c("border2", "Production" , "border1")) %>%
+  dyLegend(show = "always",width = 400)
 ```
 
 Column {data-width=350}
@@ -67,7 +82,7 @@ Column {data-width=350}
 ### Chart B
 
 ```{r}
-fig
+
 ```
 
 
@@ -75,5 +90,8 @@ fig
 
 ```{r}
 
+git remote add origin https://github.com/SherifARabie/flexboard_example.git
+git branch -M main
+git push -u origin main
 ```
 
