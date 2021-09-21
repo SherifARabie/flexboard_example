@@ -62,7 +62,7 @@ stat_production_consumption <- function(from_date, date_as_cet = FALSE){
 data = stat_production_consumption(as.Date("2021-01-01"))
 ```
 ```{r}
-  data_url <- paste0("http://driftsdata.statnett.no/restapi/ProductionConsumption/GetData?From=", as.Date("2021-09-19"))
+  data_url <- paste0("http://driftsdata.statnett.no/restapi/ProductionConsumption/GetData?From=", as.Date("2020-09-1"))
 
 data_request <- httr::GET(url = data_url, httr::user_agent("https://github.com/krose/statnettapi"))
 
@@ -71,7 +71,8 @@ data_request <- httr::GET(url = data_url, httr::user_agent("https://github.com/k
 
  
 
-View(data_content$Production)
+Production = data_content$Production
+consumption = data_content$Consumption
 #View(data_content$StartPointUTC)
 ```
 ```{r}
@@ -84,11 +85,41 @@ View(data_content$Production)
 ```{r}
 View(date_utc)
 ```
+
 ```{r}
-stat_production_consumption_latest_overview(date_as_cet = FALSE,
-  data_wide = FALSE)
+x = data.frame(date_utc=date_utc, Production=Production,consumption=consumption)
+```
+```{r}
+library(lubridate)
+x$date_utc = ymd_hms(x$date_utc)
+x$date = date(x$date_utc)
 ```
 
+```{r}
+library(xts)
+library(dplyr)
+library(dygraphs)
+data_selection = dplyr::select(x,Production,consumption) 
+
+
+
+
+#data_selection = scale(as.matrix(data_selection))
+                       
+                       
+
+calnder_date = x$date 
+
+ts <- xts( data_selection, order.by= calnder_date)
+
+
+dygraph(ts) %>%
+  dySeries("Production", axis = 'y2')%>%
+  dyOptions(fillGraph = TRUE, fillAlpha = 0.4)%>% dyRangeSelector()
+```
+```{r}
+
+```
 
 
 
