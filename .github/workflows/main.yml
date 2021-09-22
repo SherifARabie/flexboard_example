@@ -5,8 +5,7 @@
 
 on:
   push:
-    paths:
-      - flexboard_example/index.Rmd
+    branches: master
 
 name: render-rmarkdown
 
