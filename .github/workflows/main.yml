@@ -28,6 +28,7 @@ jobs:
           R -e 'install.packages("rmarkdown")'
           R -e 'install.packages("flexdashboard")'
           R -e 'install.packages("lubridate")'
+          R -e 'install.packages("httr")'
 
       - name: Render my document to all types
         run: Rscript -e 'rmarkdown::render("index.Rmd", output_format = "all")'
