@@ -31,9 +31,10 @@ jobs:
           R -e 'install.packages("httr")'
 
       - name: Render my document to all types
-        run: Rscript -e 'rmarkdown::render("docs/index.Rmd", output_format = "all")'
+        run: Rscript -e 'rmarkdown::render("index.Rmd", output_format = "all")'
       - name: Commit results
         run: |
+          mv index.html docs/
           git add docs/index.html
           git commit -m 'Re-build my-document' || echo "No changes to commit"
           git push origin master || echo "No changes to commit"
