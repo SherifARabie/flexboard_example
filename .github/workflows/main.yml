@@ -29,9 +29,9 @@ jobs:
           R -e 'install.packages("lubridate")'
 
       - name: Render my document to all types
-        run: Rscript -e 'rmarkdown::render("flexboard_example\index.Rmd", output_format = "all")'
+        run: Rscript -e 'rmarkdown::render("flexboard_example/index.Rmd", output_format = "all")'
       - name: Commit results
         run: |
-          git add flexboard_example\index.Rmd*
+          git add flexboard_example/index.Rmd*
           git commit -m 'Re-build my-document' || echo "No changes to commit"
           git push origin master || echo "No changes to commit"
