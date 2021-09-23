@@ -14,6 +14,7 @@ The projectâ€™s main goal is to demonstrates an end to end data sceince projectâ
 ## Dashboard 
 
 - Communicating the data with the use of the flexdashboard package
+- link to dashboard https://sherifarabie.github.io/flexboard_example/
 
 ## Automation 
 
